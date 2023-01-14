@@ -90,3 +90,28 @@ server.post('/messages', async (req, res) =>{
         console.log(error);
     }
 })
+
+// Messages GET ----------------------------------------------------------------------------------------------//
+
+server.get('/messages', async (req,res) =>{
+    const limit = res.query.limit ? parseInt(req.query.limit):false;
+    const { user } = req.header;
+    try{
+        const messagesFilter = await db.collection('messages').find({
+            $or:[
+                {type: 'message'},
+                {type: 'status'},
+                {type:'private_message', from: user},
+                {type:'private_message', to:user}
+            ]
+        }).toArray();
+
+        if(limit){
+            return res.send(messagesFilter.slice(-limit).reverse())
+        }else{
+            return res.send(messagesFilter.reverse());
+        }
+    }catch(error){
+        console.log(error);
+    }
+})
