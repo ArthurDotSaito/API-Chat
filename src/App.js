@@ -115,3 +115,18 @@ server.get('/messages', async (req,res) =>{
         console.log(error);
     }
 })
+
+// Status POST ----------------------------------------------------------------------------------------------//
+
+server.post('/status', async (req, res) =>{
+    const { user } = req.headers;
+    try{
+        const userNameExist = await db.collection('participants').findOne({ name: user });
+        if(!userNameExist) return res.sendStatus(404);
+        await db.collection('participants').updateOne({ name: user}, {$set: { lastStatus: Date.now() }});
+        return res.sendStatus(200);
+    }catch(error){
+        console.log(error);
+    }
+})
+
