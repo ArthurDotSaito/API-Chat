@@ -70,17 +70,17 @@ server.get('/participants', async (req, res) => {
 
 server.post('/messages', async (req, res) =>{
     const messagesData = req.body;
-    const { user } = req.header;
-    const {value: messagesSentData, error} = userSchema.validate(messagesData);
+    const {user} = req.headers;
+    const {value: messagesSentData, error} = messagesSchema.validate(messagesData);
     if(error) return res.sendStatus(422);
+    const userNameExist = await db.collection('participants').findOne({ name: user });
     try{
-        const userNameExist = await db.collection('participants').findOne({name: user});
         if(userNameExist){
             const message = {
                 ...messagesSentData,
                 from: user,
                 time: timeFormat()
-            }
+            };
             await db.collection('messages').insertOne(message);
             return res.sendStatus(201);
         }else{
@@ -94,7 +94,7 @@ server.post('/messages', async (req, res) =>{
 // Messages GET ----------------------------------------------------------------------------------------------//
 
 server.get('/messages', async (req,res) =>{
-    const limit = res.query.limit ? parseInt(req.query.limit):false;
+    const limit = req.query.limit ? parseInt(req.query.limit):false;
     const { user } = req.header;
     try{
         const messagesFilter = await db.collection('messages').find({
@@ -107,9 +107,9 @@ server.get('/messages', async (req,res) =>{
         }).toArray();
 
         if(limit){
-            return res.send(messagesFilter.slice(-limit).reverse())
+            return res.send(messagesFilter.slice(-limit))
         }else{
-            return res.send(messagesFilter.reverse());
+            return res.send(messagesFilter);
         }
     }catch(error){
         console.log(error);
