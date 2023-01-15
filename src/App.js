@@ -98,7 +98,7 @@ server.post('/messages', async (req, res) =>{
 // Messages GET ----------------------------------------------------------------------------------------------//
 
 server.get('/messages', async (req,res) =>{
-    const limit = req.query.limit ? parseInt(req.query.limit):false;
+    const limit = req.query.limit 
     const { user } = req.header;
     const {value: limitValidation, error} = getMessageSchema.validate(limit)
     if(error) return res.sendStatus(422);
@@ -112,7 +112,7 @@ server.get('/messages', async (req,res) =>{
             ]
         }).toArray();
 
-        if(limit){
+        if(limitValidation){
             return res.send(messagesFilter.slice(-limitValidation))
         }else{
             return res.send(messagesFilter);
