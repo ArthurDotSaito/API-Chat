@@ -93,7 +93,6 @@ server.post('/messages', async (req, res) =>{
                 from:stripHtml(message.from).result,
                 timeFormat:stripHtml(message.time).result
             }
-            console.log(sanitizedMessage);
             await db.collection('messages').insertOne(sanitizedMessage);
             return res.sendStatus(201);
         }else{
