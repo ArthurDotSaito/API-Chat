@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import {MongoClient} from 'mongodb';
 import { userSchema, messagesSchema } from './tools/validation.js';
 import { timeFormat } from './tools/getTimeInFormat.js'
-import { func } from 'joi';
 
 //General Constants ------------------------------------------------------------------------------ //
 
@@ -141,7 +140,7 @@ setInterval(removeInnactiveUsers, UPTDATE_TIME_REMOVE_INNACTIVE_USERS_IN_MS);
 async function removeInnactiveUsers(){
     const timeLimit = Date.now() - MAXIMUM_INNACTIVE_TIME_IN_MS;
     try{
-        const usersToRemove = await db.collection('participants').find({ lastStatus: {$ls: timeLimit}}).toArray();
+        const usersToRemove = await db.collection('participants').find({ lastStatus: {$lt: timeLimit}}).toArray();
         usersToRemove.forEach(async user => {
             const leaveMessageStatus ={
                 from: user.name,
@@ -152,7 +151,7 @@ async function removeInnactiveUsers(){
             }
             await db.collection("messages").insertOne(leaveMessageStatus);
         });
-        await db.collection('participants').deleteMany({ lastStatus: timeLimit})
+        await db.collection('participants').deleteMany({ lastStatus: {$lt: timeLimit}});
     }catch(error){
         console.log(error);
     }
