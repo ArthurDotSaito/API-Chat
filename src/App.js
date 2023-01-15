@@ -4,9 +4,14 @@ import dotenv from 'dotenv';
 import {MongoClient} from 'mongodb';
 import { userSchema, messagesSchema } from './tools/validation.js';
 import { timeFormat } from './tools/getTimeInFormat.js'
+import { func } from 'joi';
+
+//General Constants ------------------------------------------------------------------------------ //
 
 const server = express();
 const PORT = 5000;
+const MAXIMUM_INNACTIVE_TIME_IN_MS = 10000;
+const UPTDATE_TIME_REMOVE_INNACTIVE_USERS_IN_MS = 15000;
 
 // Server Configuration --------------------------------------------------------------------------- //
 
@@ -130,3 +135,25 @@ server.post('/status', async (req, res) =>{
     }
 })
 
+// Remove Innactive Users ------------------------------------------------------------------------------------ //
+
+setInterval(removeInnactiveUsers, UPTDATE_TIME_REMOVE_INNACTIVE_USERS_IN_MS);
+async function removeInnactiveUsers(){
+    const timeLimit = Date.now() - MAXIMUM_INNACTIVE_TIME_IN_MS;
+    try{
+        const usersToRemove = await db.collection('participants').find({ lastStatus: {$ls: timeLimit}}).toArray();
+        usersToRemove.forEach(async user => {
+            const leaveMessageStatus ={
+                from: user.name,
+                to:'Todos',
+                text:'sai da sala...',
+                type: 'status',
+                time: timeFormat()
+            }
+            await db.collection("messages").insertOne(leaveMessageStatus);
+        });
+        await db.collection('participants').deleteMany({ lastStatus: timeLimit})
+    }catch(error){
+        console.log(error);
+    }
+}
