@@ -113,9 +113,9 @@ server.get('/messages', async (req,res) =>{
         }).toArray();
 
         if(limitValidation){
-            return res.send(messagesFilter.slice(-limitValidation))
+            return res.send(messagesFilter.slice(-limitValidation).reverse())
         }else{
-            return res.send(messagesFilter);
+            return res.send(messagesFilter.reverse());
         }
     }catch(error){
         console.log(error);
