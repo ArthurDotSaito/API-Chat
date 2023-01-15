@@ -99,7 +99,7 @@ server.post('/messages', async (req, res) =>{
 
 server.get('/messages', async (req,res) =>{
     const limit = req.query.limit 
-    const { user } = req.header;
+    const { user } = req.headers;
     const {value: limitValidation, error} = getMessageSchema.validate(limit)
     if(error) return res.sendStatus(422);
     try{
