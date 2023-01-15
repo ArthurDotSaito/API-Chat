@@ -108,7 +108,7 @@ server.get('/messages', async (req,res) =>{
                 {type: 'message'},
                 {type: 'status'},
                 {type:'private_message', from: user},
-                {type:'private_message', to:user}
+                {type:'private_message', to: user}
             ]
         }).toArray();
 
@@ -154,6 +154,7 @@ async function removeInnactiveUsers(){
             await db.collection("messages").insertOne(leaveMessageStatus);
         });
         await db.collection('participants').deleteMany({ lastStatus: {$lt: timeLimit}});
+        await db.collection('messages').deleteMany({ lastStatus: {$lt: timeLimit}});
     }catch(error){
         console.log(error);
     }
