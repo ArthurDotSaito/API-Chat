@@ -9,3 +9,5 @@ export const messagesSchema = Joi.object({
     text: Joi.string().required(),
     type: Joi.string().valid('message', 'private_message').required()
   });
+
+export const getMessageSchema = Joi.number().positive();

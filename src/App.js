@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import {MongoClient} from 'mongodb';
-import { userSchema, messagesSchema } from './tools/validation.js';
+import { userSchema, messagesSchema, getMessageSchema } from './tools/validation.js';
 import { timeFormat } from './tools/getTimeInFormat.js'
 
 //General Constants ------------------------------------------------------------------------------ //
@@ -88,7 +88,7 @@ server.post('/messages', async (req, res) =>{
             await db.collection('messages').insertOne(message);
             return res.sendStatus(201);
         }else{
-            return res.sendStatus(402);
+            return res.sendStatus(422);
         }
     }catch(error){
         console.log(error);
@@ -100,6 +100,8 @@ server.post('/messages', async (req, res) =>{
 server.get('/messages', async (req,res) =>{
     const limit = req.query.limit ? parseInt(req.query.limit):false;
     const { user } = req.header;
+    const {value: limitValidation, error} = getMessageSchema.validate(limit)
+    if(error) return res.sendStatus(422);
     try{
         const messagesFilter = await db.collection('messages').find({
             $or:[
@@ -111,7 +113,7 @@ server.get('/messages', async (req,res) =>{
         }).toArray();
 
         if(limit){
-            return res.send(messagesFilter.slice(-limit))
+            return res.send(messagesFilter.slice(-limitValidation))
         }else{
             return res.send(messagesFilter);
         }
