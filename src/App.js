@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { stripHtml } from 'string-strip-html';
 import {MongoClient} from 'mongodb';
 import { userSchema, messagesSchema, getMessageSchema } from './tools/validation.js';
 import { timeFormat } from './tools/getTimeInFormat.js'
@@ -42,7 +43,7 @@ server.post('/participants', async (req, res) =>{
         const userNameExist = await db.collection('participants').findOne({name: userRegister.name});
         if(!userNameExist){
             const entryMessageStatus = {
-                from: userRegister.name,
+                from: stripHtml(userRegister.name).result,
                 to: 'Todos',
                 text:'Entra na sala...',
                 type:'status',
@@ -85,7 +86,15 @@ server.post('/messages', async (req, res) =>{
                 from: user,
                 time: timeFormat()
             };
-            await db.collection('messages').insertOne(message);
+            const sanitizedMessage = {
+                to:stripHtml(message.to).result,
+                text:stripHtml(message.text).result,
+                type:stripHtml(message.type).result,
+                from:stripHtml(message.from).result,
+                timeFormat:stripHtml(message.time).result
+            }
+            console.log(sanitizedMessage);
+            await db.collection('messages').insertOne(sanitizedMessage);
             return res.sendStatus(201);
         }else{
             return res.sendStatus(422);
